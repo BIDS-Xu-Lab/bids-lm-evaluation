@@ -19,6 +19,17 @@ eval_logger = logging.getLogger(__name__)
 
 
 # Register Aggregations First
+@register_aggregation("recall")
+def recall_score(items):
+    from sklearn.metrics import recall_score
+
+    unzipped_list = list(zip(*items))
+    golds = unzipped_list[0]
+    preds = unzipped_list[1]
+    return recall_score(golds, preds)
+
+
+
 @register_aggregation("bypass")
 def bypass_agg(arr):
     return 999
@@ -68,17 +79,6 @@ def f1_score(items):
     fscore = f1_score(golds, preds)
 
     return np.max(fscore)
-
-
-@register_aggregation("recall")
-def recall_agg(items):
-    from sklearn.metrics import recall_score
-
-    unzipped_list = list(zip(*items))
-    golds = unzipped_list[0]
-    preds = unzipped_list[1]
-    return recall_score(golds, preds)
-
 
 
 @register_aggregation("matthews_corrcoef")
@@ -149,7 +149,47 @@ def brier_score(items):  # This is a passthrough function
     gold_one_hot = np.eye(num_class)[gold]
     return np.mean(np.sum((predictions - gold_one_hot) ** 2, axis=1))
 
+# ---------------------------- Metrics ---------------------------- #
+@register_metric(
+    metric="recall_mc",
+    higher_is_better=True,
+    output_type="multiple_choice",
+    aggregation="recall",
+)
+def recall_mc_fn(items):  # This is a passthrough function
+    return items
 
+
+@register_metric(
+    metric="recall_gu",
+    higher_is_better=True,
+    output_type="generate_until",
+    aggregation="recall",
+)
+def recall_gu_fn(*, references, predictions, **kwargs):
+    # return a tuple so aggregation can compute across dataset
+    return (references[0], predictions[0])
+
+
+@register_metric(
+    metric="f1_gu",
+    higher_is_better=True,
+    output_type="generate_until",
+    aggregation="f1",
+)
+def f1_gu_fn(*, references, predictions, **kwargs):
+    return (references[0], predictions[0])
+
+@register_metric(
+    metric="f1_mc",
+    higher_is_better=True,
+    output_type="multiple_choice",
+    aggregation="f1",
+)
+def f1_mc_fn(items):  # This is a passthrough function
+    return items
+
+    
 @register_metric(
     metric="brier_score",
     higher_is_better=False,
@@ -337,16 +377,6 @@ def mcc_fn(items):  # This is a passthrough function
     aggregation="f1",
 )
 def f1_fn(items):  # This is a passthrough function
-    return items
-
-
-@register_metric(
-    metric="recall",
-    higher_is_better=True,
-    output_type="multiple_choice",
-    aggregation="recall",
-)
-def recall_fn(items):  # This is a passthrough function
     return items
 
 
