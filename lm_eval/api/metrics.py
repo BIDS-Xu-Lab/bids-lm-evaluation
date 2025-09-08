@@ -70,6 +70,17 @@ def f1_score(items):
     return np.max(fscore)
 
 
+@register_aggregation("recall")
+def recall_agg(items):
+    from sklearn.metrics import recall_score
+
+    unzipped_list = list(zip(*items))
+    golds = unzipped_list[0]
+    preds = unzipped_list[1]
+    return recall_score(golds, preds)
+
+
+
 @register_aggregation("matthews_corrcoef")
 def matthews_corrcoef(items):
     from sklearn.metrics import matthews_corrcoef
@@ -330,6 +341,16 @@ def f1_fn(items):  # This is a passthrough function
 
 
 @register_metric(
+    metric="recall",
+    higher_is_better=True,
+    output_type="multiple_choice",
+    aggregation="recall",
+)
+def recall_fn(items):  # This is a passthrough function
+    return items
+
+
+@register_metric(
     metric="bleu",
     higher_is_better=True,
     output_type="generate_until",
@@ -551,7 +572,7 @@ def stderr_for_metric(
     bootstrappable = [
         median,
         matthews_corrcoef,
-        f1_score,
+        # f1_score,
         perplexity,
         bleu,
         chrf,
