@@ -161,24 +161,33 @@ def recall_mc_fn(items):  # This is a passthrough function
 
 
 @register_metric(
-    metric="recall_gu",
+    metric="recall_gu_yn",
     higher_is_better=True,
     output_type="generate_until",
     aggregation="recall",
 )
-def recall_gu_fn(*, references, predictions, **kwargs):
-    # return a tuple so aggregation can compute across dataset
-    return (references[0], predictions[0])
+def recall_gu_yn_fn(*, references, predictions, **kwargs):
+    # Normalize to binary labels {0,1} for compatibility with sklearn metrics
+    def _yes_no_to_binary_label(value):
+        text = str(value).strip().lower()
+        return 1 if text == 'yes' else 0
+
+    return (_yes_no_to_binary_label(references[0]), _yes_no_to_binary_label(predictions[0]))
 
 
 @register_metric(
-    metric="f1_gu",
+    metric="f1_gu_yn",
     higher_is_better=True,
     output_type="generate_until",
     aggregation="f1",
 )
-def f1_gu_fn(*, references, predictions, **kwargs):
-    return (references[0], predictions[0])
+def f1_gu_yn_fn(*, references, predictions, **kwargs):
+    # Normalize to binary labels {0,1} for compatibility with sklearn metrics
+    def _yes_no_to_binary_label(value):
+        text = str(value).strip().lower()
+        return 1 if text == 'yes' else 0
+
+    return (_yes_no_to_binary_label(references[0]), _yes_no_to_binary_label(predictions[0]))
 
 @register_metric(
     metric="f1_mc",
