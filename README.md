@@ -2,6 +2,12 @@
 
 ## Installation
 - Follow the installation instructions in the lm-evaluation-harness README.md
+- pip install lm_eval[vllm] vllm==0.9.1 # Otherwise [vllm: Sampled token IDs exceed the max model length](https://github.com/EleutherAI/lm-evaluation-harness/issues/3134)
+- pip install "transformers<4.54.0"  # See: [vllm-ascend issue #2046: All vLLM <= v0.10.0 and transformers>=4.54.0 will encounter this issue](https://github.com/vllm-project/vllm-ascend/issues/2046)
 
 ## Usage
-- Add new tasks to the `lm_eval/tasks` folder.
+### Exsitng tasks
+ - To use existing tasks, check out lm_eval/tasks folder. 
+- 
+### Add new tasks
+ - Add new tasks to the `bids_tasks` folder and make sure to add `include_path` for this folder in testing lm_eval command. 
