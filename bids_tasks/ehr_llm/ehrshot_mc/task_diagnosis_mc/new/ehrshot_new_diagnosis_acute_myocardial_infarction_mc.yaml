@@ -1,0 +1,35 @@
+task: ehrshot_new_diagnosis_acute_myocardial_infarction_mc
+# Local dataset configuration
+dataset_path: parquet
+dataset_name: null
+dataset_kwargs:
+  data_files:
+    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_diagnosis/task_diagnosis_test/*.parquet
+output_type: multiple_choice
+training_split: null
+validation_split: null
+test_split: test
+
+# Process docs to only include 'new' diagnosis cases
+process_docs: !function utils.filter_new_cases_acute_myocardial_infarction
+
+# Custom prompt and target functions
+doc_to_text: !function utils.doc_to_text_acute_myocardial_infarction
+doc_to_target: !function utils.doc_to_target_acute_myocardial_infarction
+doc_to_choice: ["No", "Yes"]
+# Metrics configuration
+metric_list:
+  - metric: acc
+    aggregation: mean
+    higher_is_better: true
+  - metric: f1_mc
+    aggregation: f1
+    higher_is_better: true
+  - metric: recall_mc
+    aggregation: recall
+    higher_is_better: true
+# Task metadata
+metadata:
+  version: 1.0
+  description: "EHR-based NEW acute myocardial infarction diagnosis prediction: predict 1-year risk of first-ever Acute myocardial infarction diagnosis for patients with no prior history"
+  num_fewshot: 0 

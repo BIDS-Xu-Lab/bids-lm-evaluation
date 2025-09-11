@@ -1,0 +1,19 @@
+group: group_ehrshot_inpatient_tasks_mc
+task:
+  - ehrshot_inpatient_longstay_mc
+  - ehrshot_inpatient_readmission_mc
+  - ehrshot_inpatient_mortality_mc
+aggregate_metric_list:
+  - metric: acc
+    aggregation: mean
+    weight_by_size: true
+  - metric: f1_mc
+    aggregation: mean
+    weight_by_size: true
+  - metric: recall_mc
+    aggregation: mean
+    weight_by_size: true
+
+metadata:
+  version: 1.0
+  description: "EHR inpatient related prediction tasks group - aggregates results across all 3 operational prediction tasks (longstay, readmission, mortality for inpatient)" 

@@ -1,0 +1,43 @@
+task: ehrshot_inpatient_longstay_gu
+# Local dataset configuration
+dataset_path: parquet
+dataset_name: null
+dataset_kwargs:
+  data_files:
+    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_operational/task_longstay/task_longstay_test/*.parquet
+output_type: generate_until
+training_split: null
+validation_split: null
+test_split: test
+# Custom prompt and target functions
+doc_to_text: !function utils.doc_to_text_longstay
+doc_to_target: !function utils.doc_to_target_longstay
+filter_list:
+  - name: "binary_yn"
+    filter:
+      - function: remove_whitespace
+      - function: lowercase
+      - function: regex
+        regex_pattern: "(?s)\\b(yes|no)\\b"
+        group_select: 0
+        fallback: "no"
+      - function: map
+        mapping_dict: {"yes": "Yes", "no": "No"}
+        default_value: "No"
+      - function: take_first
+
+metric_list:
+  - metric: exact_match
+    aggregation: mean
+    higher_is_better: true
+  - metric: f1_gu_yn
+    aggregation: f1
+    higher_is_better: true
+  - metric: recall_gu_yn
+    aggregation: recall
+    higher_is_better: true
+# Task metadata
+metadata:
+  version: 1.0
+  description: "Custom EHR operational task for longstay prediction"
+  num_fewshot: 0 

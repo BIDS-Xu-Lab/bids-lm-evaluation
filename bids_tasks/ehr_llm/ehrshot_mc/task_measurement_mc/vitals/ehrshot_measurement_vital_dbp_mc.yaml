@@ -1,0 +1,32 @@
+task: ehrshot_measurement_vital_dbp_mc
+# Local dataset configuration
+dataset_path: parquet
+dataset_name: null
+dataset_kwargs:
+  data_files:
+    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_measurement/dbp_test/*.parquet
+output_type: multiple_choice
+training_split: null
+validation_split: null
+test_split: test
+
+# Custom prompt and target functions
+doc_to_text: !function utils.doc_to_text
+doc_to_target: !function utils.doc_to_target
+doc_to_choice: ["No", "Yes"]
+# Metrics configuration
+metric_list:
+  - metric: acc
+    aggregation: mean
+    higher_is_better: true
+  - metric: f1_mc
+    aggregation: f1
+    higher_is_better: true
+  - metric: recall_mc
+    aggregation: recall
+    higher_is_better: true
+# Task metadata
+metadata:
+  version: 1.0
+  description: "EHR vital signs prediction task for diastolic blood pressure: predict next measurement normal/abnormal status (≤90 mmHg = normal, >90 mmHg = abnormal)"
+  num_fewshot: 0 

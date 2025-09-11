@@ -1,0 +1,31 @@
+task: ehrshot_measurement_vital_heart_rate_gu
+# Local dataset configuration
+dataset_path: parquet
+dataset_name: null
+dataset_kwargs:
+  data_files:
+    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_measurement/heart_rate_test/*.parquet
+output_type: generate_until
+training_split: null
+validation_split: null
+test_split: test
+
+# Custom prompt and target functions
+doc_to_text: !function utils.doc_to_text
+doc_to_target: !function utils.doc_to_target
+# Metrics configuration
+metric_list:
+  - metric: exact_match
+    aggregation: mean
+    higher_is_better: true
+  - metric: f1_gu_yn
+    aggregation: f1
+    higher_is_better: true
+  - metric: recall_gu_yn
+    aggregation: recall
+    higher_is_better: true
+# Task metadata
+metadata:
+  version: 1.0
+  description: "EHR vital signs prediction task for heart rate: predict next measurement normal/abnormal status (60-100 /min = normal, <60 or >100 /min = abnormal)"
+  num_fewshot: 0 

@@ -1,0 +1,19 @@
+group: group_ehrshot_measurement_vital_tasks_mc
+task:
+  - ehrshot_measurement_vital_dbp_mc
+  - ehrshot_measurement_vital_heart_rate_mc
+  - ehrshot_measurement_vital_sbp_mc
+aggregate_metric_list:
+  - metric: acc
+    aggregation: mean
+    weight_by_size: true
+  - metric: f1_mc
+    aggregation: mean
+    weight_by_size: true
+  - metric: recall_mc
+    aggregation: mean
+    weight_by_size: true
+metadata:
+  version: 1.0
+  description: "EHR vital signs prediction tasks"
+  num_fewshot: 0 

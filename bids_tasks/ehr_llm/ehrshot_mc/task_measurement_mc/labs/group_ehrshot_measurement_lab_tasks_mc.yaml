@@ -1,0 +1,28 @@
+group: group_ehrshot_measurement_lab_tasks_mc
+task:
+  - ehrshot_measurement_lab_albumin_mc
+  - ehrshot_measurement_lab_alt_mc
+  - ehrshot_measurement_lab_ast_mc
+  - ehrshot_measurement_lab_bilirubin_mc
+  - ehrshot_measurement_lab_bun_mc
+  - ehrshot_measurement_lab_creatinine_mc
+  - ehrshot_measurement_lab_crp_mc
+  - ehrshot_measurement_lab_glucose_mc
+  - ehrshot_measurement_lab_hba1c_mc
+  - ehrshot_measurement_lab_hemoglobin_mc
+  - ehrshot_measurement_lab_ldl_mc
+  - ehrshot_measurement_lab_platelets_mc
+  - ehrshot_measurement_lab_totalcholesterol_mc
+aggregate_metric_list:
+  - metric: acc
+    aggregation: mean
+    weight_by_size: true
+  - metric: f1_mc
+    aggregation: mean
+    weight_by_size: true
+  - metric: recall_mc
+    aggregation: mean
+    weight_by_size: true
+metadata:
+  version: 1.0
+  description: "EHR lab measurement prediction tasks group - aggregates results across all 13 lab measurement prediction tasks for next measurement normal/abnormal classification (Albumin, ALT, AST, Bilirubin, BUN, Creatinine, CRP, Glucose, HbA1c, Hemoglobin, LDL, Platelets, Total Cholesterol)" 

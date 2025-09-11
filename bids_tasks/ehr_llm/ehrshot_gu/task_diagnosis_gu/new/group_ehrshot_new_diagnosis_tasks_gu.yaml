@@ -1,0 +1,42 @@
+group: group_ehrshot_new_diagnosis_tasks_gu
+
+task:
+  - ehrshot_new_diagnosis_acute_myocardial_infarction_gu
+  - ehrshot_new_diagnosis_asthma_gu
+  - ehrshot_new_diagnosis_breast_cancer_gu
+  - ehrshot_new_diagnosis_chronic_kidney_disease_gu
+  - ehrshot_new_diagnosis_chronic_obstructive_pulmonary_disease_gu
+  - ehrshot_new_diagnosis_coronary_arteriosclerosis_gu
+  - ehrshot_new_diagnosis_dementia_gu
+  - ehrshot_new_diagnosis_depressive_disorder_gu
+  - ehrshot_new_diagnosis_gastric_cancer_gu
+  - ehrshot_new_diagnosis_heart_failure_gu
+  - ehrshot_new_diagnosis_hyperlipidemia_gu
+  - ehrshot_new_diagnosis_hypertension_gu
+  - ehrshot_new_diagnosis_intestinal_cancer_gu
+  - ehrshot_new_diagnosis_ischemic_stroke_gu
+  - ehrshot_new_diagnosis_liver_cancer_gu
+  - ehrshot_new_diagnosis_lung_cancer_gu
+  - ehrshot_new_diagnosis_lupus_gu
+  - ehrshot_new_diagnosis_obesity_gu
+  - ehrshot_new_diagnosis_pancreatic_cancer_gu
+  - ehrshot_new_diagnosis_prostate_cancer_gu
+  - ehrshot_new_diagnosis_type_ii_diabetes_gu
+
+aggregate_metric_list:
+  - metric: exact_match
+    aggregation: mean
+    weight_by_size: true
+    filter_list: [binary_yn]
+  - metric: f1_gu_yn
+    aggregation: mean
+    weight_by_size: true
+    filter_list: [binary_yn]
+  - metric: recall_gu_yn
+    aggregation: mean
+    weight_by_size: true
+    filter_list: [binary_yn]
+metadata:
+  version: 1.0
+  description: "EHR-based NEW diagnosis prediction tasks"
+  num_fewshot: 0 

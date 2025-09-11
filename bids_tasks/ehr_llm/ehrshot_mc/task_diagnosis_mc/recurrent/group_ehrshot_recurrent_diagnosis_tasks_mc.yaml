@@ -1,0 +1,37 @@
+group: group_ehrshot_recurrent_diagnosis_tasks_mc
+task:
+  - ehrshot_recurrent_diagnosis_acute_myocardial_infarction_mc
+  - ehrshot_recurrent_diagnosis_asthma_mc
+  - ehrshot_recurrent_diagnosis_breast_cancer_mc
+  - ehrshot_recurrent_diagnosis_chronic_kidney_disease_mc
+  - ehrshot_recurrent_diagnosis_chronic_obstructive_pulmonary_disease_mc
+  - ehrshot_recurrent_diagnosis_coronary_arteriosclerosis_mc
+  - ehrshot_recurrent_diagnosis_dementia_mc
+  - ehrshot_recurrent_diagnosis_depressive_disorder_mc
+  - ehrshot_recurrent_diagnosis_gastric_cancer_mc
+  - ehrshot_recurrent_diagnosis_heart_failure_mc
+  - ehrshot_recurrent_diagnosis_hyperlipidemia_mc
+  - ehrshot_recurrent_diagnosis_hypertension_mc
+  - ehrshot_recurrent_diagnosis_intestinal_cancer_mc
+  - ehrshot_recurrent_diagnosis_ischemic_stroke_mc
+  - ehrshot_recurrent_diagnosis_liver_cancer_mc
+  - ehrshot_recurrent_diagnosis_lung_cancer_mc
+  - ehrshot_recurrent_diagnosis_lupus_mc
+  - ehrshot_recurrent_diagnosis_obesity_mc
+  - ehrshot_recurrent_diagnosis_pancreatic_cancer_mc
+  - ehrshot_recurrent_diagnosis_prostate_cancer_mc
+  - ehrshot_recurrent_diagnosis_type_ii_diabetes_mc
+aggregate_metric_list:
+  - metric: acc
+    aggregation: mean
+    weight_by_size: true
+  - metric: f1_mc
+    aggregation: mean
+    weight_by_size: true
+  - metric: recall_mc
+    aggregation: mean
+    weight_by_size: true
+metadata:
+  version: 1.0
+  description: "EHR-based RECURRENT diagnosis prediction tasks"
+  num_fewshot: 0 
