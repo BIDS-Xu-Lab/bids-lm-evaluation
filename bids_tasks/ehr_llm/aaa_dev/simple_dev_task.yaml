@@ -4,7 +4,7 @@ dataset_path: json
 dataset_name: null
 dataset_kwargs:
   data_files:
-    test: /gpfs/radev/home/yl2342/project/lm-evaluation-harness/bids_tasks/ehr_llm/aaa_dev/simple_dev_data.json
+    test: /gpfs/radev/home/yl2342/project/bids-lm-evaluation/bids_tasks/ehr_llm/aaa_dev/simple_dev_data.json
 output_type: generate_until
 training_split: null
 validation_split: null

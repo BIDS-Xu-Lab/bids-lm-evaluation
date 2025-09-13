@@ -13,8 +13,6 @@
 - pip install "transformers<4.54.0"  # See: [vllm-ascend issue #2046: All vLLM <= v0.10.0 and transformers>=4.54.0 will encounter this issue](https://github.com/vllm-project/vllm-ascend/issues/2046)
 
 ## Usage
-### Exsitng tasks
  - To use existing tasks, check out lm_eval/tasks folder. 
-- 
-### Add new tasks
  - Add new tasks to the `bids_tasks` folder and make sure to add `include_path` for this folder in testing lm_eval command. 
+ - check out the jobs_run folder to find the scripts run on specific YCRC HPC

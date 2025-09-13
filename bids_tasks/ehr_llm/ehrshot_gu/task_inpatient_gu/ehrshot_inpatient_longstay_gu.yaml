@@ -12,6 +12,14 @@ test_split: test
 # Custom prompt and target functions
 doc_to_text: !function utils.doc_to_text_longstay
 doc_to_target: !function utils.doc_to_target_longstay
+
+# gen kwargs
+generation_kwargs:
+  until: ["<im_end>"]
+  max_gen_toks: 1024
+  do_sample: false
+  temperature: 0.0
+
 filter_list:
   - name: "binary_yn"
     filter:
