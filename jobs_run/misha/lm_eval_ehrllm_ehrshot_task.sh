@@ -18,6 +18,9 @@ DTYPE="bfloat16"
 # Output directory configuration
 RESULTS_ROOT_DIR="/gpfs/radev/home/yl2342/project/bids-lm-evaluation/results"
 
+# Task include path configuration
+INCLUDE_PATH="/gpfs/radev/home/yl2342/project/bids-lm-evaluation/bids_tasks/ehr_llm"
+
 # Construct model arguments string
 # Note: enable_thinking=True and think_end_token='</think>' are automatically included for all models
 # This enables thinking/reasoning capabilities for models that support it (e.g., Qwen models)
@@ -191,7 +194,7 @@ lm_eval \
    --model vllm \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
-   --include_path bids_tasks/ehr_llm \
+   --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_inpatient_tasks_gu \
    --batch_size ${BATCH_SIZE} \
    --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_inpatient/max_len_${MAX_MODEL_LEN} \
@@ -214,7 +217,7 @@ lm_eval \
    --model vllm \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
-   --include_path bids_tasks/ehr_llm \
+   --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_measurement_lab_tasks_gu \
    --batch_size ${BATCH_SIZE} \
    --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_measurement/labs/max_len_${MAX_MODEL_LEN} \
@@ -234,7 +237,7 @@ lm_eval \
    --model vllm \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
-   --include_path bids_tasks/ehr_llm \
+   --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_measurement_vital_tasks_gu \
    --batch_size ${BATCH_SIZE} \
    --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_measurement/vitals/max_len_${MAX_MODEL_LEN} \
@@ -255,7 +258,7 @@ lm_eval \
    --model vllm \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
-   --include_path bids_tasks/ehr_llm \
+   --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_new_diagnosis_tasks_gu \
    --batch_size ${BATCH_SIZE} \
    --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_diagnosis/new/max_len_${MAX_MODEL_LEN} \
@@ -275,7 +278,7 @@ lm_eval \
    --model vllm \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
-   --include_path bids_tasks/ehr_llm \
+   --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_recurrent_diagnosis_tasks_gu \
    --batch_size ${BATCH_SIZE} \
    --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_diagnosis/recurrent/max_len_${MAX_MODEL_LEN} \
