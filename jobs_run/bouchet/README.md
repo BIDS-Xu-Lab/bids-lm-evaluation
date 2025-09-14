@@ -1,8 +1,8 @@
 # EHRShot Evaluation Scripts
 
-> **YCRC Misha Cluster Only**  
-> These scripts are designed to run on the **YCRC Misha cluster** specifically.  
-> EHRShot data is located at: `/gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/`
+> **Bouchet Cluster Only**  
+> These scripts are designed to run on the **Bouchet cluster** specifically.  
+> EHRShot data is located at: `/home/yl2342/project_pi_hx235/yl2342/data/ehrshot/visit_oriented_ehr/`
 
 This directory contains scripts for evaluating language models on the EHRShot benchmark using the lm-evaluation-harness framework.
 
@@ -11,7 +11,7 @@ This directory contains scripts for evaluating language models on the EHRShot be
 - **`lm_eval_ehrllm_ehrshot_task_slurm.sh`**: SLURM-based evaluation script for cluster submission
 - **`lm_eval_ehrllm_ehrshot_task.sh`**: Interactive evaluation script for direct execution on compute nodes
 
-Both scripts are fully aligned and use the same task configurations, conda environment (`bids_lm_eval`), and support thinking models.
+Both scripts are fully aligned and use the same task configurations, conda environment (`bids_lm_eval`), and support thinking models with automatic reasoning chain capabilities.
 
 ## Quick Start
 
@@ -64,21 +64,44 @@ sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name meta-llama/Llama-3.1-8B
 
 ## Task Groups Evaluated
 
-1. **Inpatient Tasks**: Patient management and operational predictions
+The scripts evaluate the following EHRShot task groups:
+
+1. **Inpatient Tasks** (`group_ehrshot_inpatient_tasks_gu`): Patient management and operational predictions
 2. **Measurement Tasks**: 
-   - Lab values prediction
-   - Vital signs prediction
+   - **Lab Tasks** (`group_ehrshot_measurement_lab_tasks_gu`): Lab values prediction
+   - **Vital Tasks** (`group_ehrshot_measurement_vital_tasks_gu`): Vital signs prediction
 3. **Diagnosis Tasks**:
-   - New diagnosis prediction
-   - Recurrent diagnosis prediction
+   - **New Diagnosis** (`group_ehrshot_new_diagnosis_tasks_gu`): New diagnosis prediction
+   - **Recurrent Diagnosis** (`group_ehrshot_recurrent_diagnosis_tasks_gu`): Recurrent diagnosis prediction
+
+## SLURM Configuration
+
+The SLURM script is configured with:
+- **Partition**: `gpu`
+- **GPUs**: `h100:2` (2x H100 GPUs)
+- **Time Limit**: 24 hours
+- **Memory**: 512GB
+- **CPUs**: 16 cores
+- **Nodes**: 1
 
 ## Requirements
 
 - SLURM cluster access (for SLURM script)
 - Conda environment: `bids_lm_eval` with vllm 0.9.1
 - HuggingFace authentication for gated models
+- Access to Bouchet cluster resources
+
+## Environment Configuration
+
+The scripts automatically configure:
+- **HuggingFace Cache**: Uses scratch space (configured in ~/.bashrc)
+- **PyTorch Settings**: `PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"`
+- **vLLM Optimization**: Usage stats disabled, tensor/data parallelism configured
+- **Torch Compile Cache**: Automatic cache directory management
 
 ## Output Structure
+
+Results are saved to `/gpfs/radev/home/yl2342/project/bids-lm-evaluation/results/`:
 
 ```
 results/ehr_llm/ehrshot/
@@ -114,14 +137,16 @@ sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-4B --max_mod
 ## Troubleshooting
 
 - **CUDA OOM**: Reduce `--gpu_memory_util` to 0.6 or lower
-- **Gated models**: Run `huggingface-cli login` first
+- **Gated models**: Run `huggingface-cli login` first or ensure HF token is in `$HF_HOME/token`
 - **Context length**: Use higher `--max_model_len` for EHR data
 - **Debugging**: Add `--log_samples --limit 10` for detailed output
+- **Disk quota**: Cache directories are automatically configured to use scratch space
 
 ## Features
 
-- **Thinking Model Support**: Automatic reasoning chain support for compatible models
-- **Memory Optimization**: Configurable GPU memory and batch size settings
-- **Error Handling**: Comprehensive validation and progress tracking
-- **Cache Management**: Automatic redirection to scratch space
-- **SLURM Integration**: Optimized for H100/H200 GPUs with proper resource allocation 
+- **Thinking Model Support**: Automatic reasoning chain support for compatible models with `enable_thinking=True` and `think_end_token='</think>'`
+- **Memory Optimization**: Configurable GPU memory and batch size settings with data/tensor parallelism
+- **Error Handling**: Comprehensive validation, progress tracking, and exit code handling
+- **Cache Management**: Automatic redirection to scratch space for HuggingFace and PyTorch caches
+- **SLURM Integration**: Optimized for H100 GPUs with proper resource allocation and logging
+- **Environment Cleanup**: Automatic conda deactivation and module unloading 
