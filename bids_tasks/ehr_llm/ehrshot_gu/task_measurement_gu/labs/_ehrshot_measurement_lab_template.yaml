@@ -1,0 +1,49 @@
+# Template for EHR lab measurement tasks (ehrshot_measurement_lab_*_gu)
+# Local dataset configuration
+dataset_path: parquet
+dataset_name: null
+output_type: generate_until
+training_split: null
+validation_split: null
+test_split: test
+
+# Custom prompt and target functions
+doc_to_text: !function utils.doc_to_text
+doc_to_target: !function utils.doc_to_target
+
+# Generation kwargs
+generation_kwargs:
+  until: ["<im_end>"]
+  max_gen_toks: 1024
+  do_sample: false
+  temperature: 0.0
+
+filter_list:
+  - name: "binary_yn"
+    filter:
+      - function: remove_whitespace
+      - function: lowercase
+      - function: regex
+        regex_pattern: "(?s)\\b(yes|no)\\b"
+        group_select: 0
+        fallback: "no"
+      - function: map
+        mapping_dict: {"yes": "Yes", "no": "No"}
+        default_value: "No"
+      - function: take_first
+
+metric_list:
+  - metric: exact_match
+    aggregation: mean
+    higher_is_better: true
+  - metric: f1_gu_yn
+    aggregation: f1
+    higher_is_better: true
+  - metric: recall_gu_yn
+    aggregation: recall
+    higher_is_better: true
+
+# Task metadata
+metadata:
+  version: 1.0
+  num_fewshot: 0 

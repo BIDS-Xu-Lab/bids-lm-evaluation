@@ -1,55 +1,9 @@
+include: "_ehrshot_recurrent_diagnosis_template.yaml"
 task: ehrshot_recurrent_diagnosis_dementia_gu
-# Local dataset configuration
-dataset_path: parquet
-dataset_name: null
-dataset_kwargs:
-  data_files:
-    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_diagnosis/task_diagnosis_test/*.parquet
-output_type: generate_until
-training_split: null
-validation_split: null
-test_split: test
-
 # Process docs to only include 'recurrent' diagnosis cases
 process_docs: !function utils.filter_recurrent_cases_dementia
-
 # Custom prompt and target functions
 doc_to_text: !function utils.doc_to_text_dementia
 doc_to_target: !function utils.doc_to_target_dementia
-
-# gen kwargs
-generation_kwargs:
-  until: ["<im_end>"]
-  max_gen_toks: 1024
-  do_sample: false
-  temperature: 0.0
-
-filter_list:
-  - name: "binary_yn"
-    filter:
-      - function: remove_whitespace
-      - function: lowercase
-      - function: regex
-        regex_pattern: "(?s)\\b(yes|no)\\b"
-        group_select: 0
-        fallback: "no"
-      - function: map
-        mapping_dict: {"yes": "Yes", "no": "No"}
-        default_value: "No"
-      - function: take_first
-
-metric_list:
-  - metric: exact_match
-    aggregation: mean
-    higher_is_better: true
-  - metric: f1_gu_yn
-    aggregation: f1
-    higher_is_better: true
-  - metric: recall_gu_yn
-    aggregation: recall
-    higher_is_better: true
-# Task metadata
 metadata:
-  version: 1.0
-  description: "EHR-based RECURRENT dementia diagnosis prediction: predict 1-year risk of subsequent Dementia diagnosis for patients with prior history"
-  num_fewshot: 0 
+  description: "EHR-based RECURRENT dementia diagnosis prediction: predict 1-year risk of subsequent Dementia diagnosis for patients with prior history" 
