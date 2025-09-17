@@ -5,12 +5,12 @@ MODEL_NAME=""
 MAX_MODEL_LEN=""
 LIMIT=""
 BATCH_SIZE="auto"
-GPU_MEMORY_UTILIZATION="0.8"
+GPU_MEMORY_UTILIZATION="0.7"
 LOG_SAMPLES=false
 
 # Global variables for inference configuration
 TENSOR_PARALLEL_SIZE=1
-DATA_PARALLEL_SIZE=2
+DATA_PARALLEL_SIZE=1
 DTYPE="bfloat16"
 
 # GPU_MEMORY_UTILIZATION and BATCH_SIZE are now set from command line arguments
@@ -21,10 +21,6 @@ RESULTS_ROOT_DIR="/gpfs/radev/home/yl2342/project/bids-lm-evaluation/results"
 # Task include path configuration
 INCLUDE_PATH="/gpfs/radev/home/yl2342/project/bids-lm-evaluation/bids_tasks/ehr_llm"
 
-# Construct model arguments string
-# Note: enable_thinking=True and think_end_token='</think>' are automatically included for all models
-# This enables thinking/reasoning capabilities for models that support it (e.g., Qwen models)
-MODEL_ARGS="pretrained=${MODEL_NAME},tensor_parallel_size=${TENSOR_PARALLEL_SIZE},data_parallel_size=${DATA_PARALLEL_SIZE},dtype=${DTYPE},max_model_len=${MAX_MODEL_LEN},gpu_memory_utilization=${GPU_MEMORY_UTILIZATION},enable_thinking=True,think_end_token='</think>'"
 
 # Function to display usage
 usage() {
@@ -96,6 +92,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Debug: Print received arguments
+echo "$(date): DEBUG - Total arguments received: $#"
+echo "$(date): DEBUG - All arguments: $@"
+echo "$(date): DEBUG - MODEL_NAME='$MODEL_NAME'"
+echo "$(date): DEBUG - MAX_MODEL_LEN='$MAX_MODEL_LEN'"
+
 # Validate required arguments
 if [ -z "$MODEL_NAME" ]; then
     echo "Error: --model_name is required"
@@ -132,6 +134,13 @@ if ! [[ "$GPU_MEMORY_UTILIZATION" =~ ^0*\.?[0-9]+$ ]] || (( $(echo "$GPU_MEMORY_
     echo "Error: --gpu_memory_util must be a number between 0 and 1"
     exit 1
 fi
+
+# Construct model arguments string (AFTER argument parsing)
+# Note: enable_thinking=True and think_end_token='</think>' are automatically included for all models
+# This enables thinking/reasoning capabilities for models that support it (e.g., Qwen models)
+MODEL_ARGS="pretrained=${MODEL_NAME},tensor_parallel_size=${TENSOR_PARALLEL_SIZE},data_parallel_size=${DATA_PARALLEL_SIZE},dtype=${DTYPE},max_model_len=${MAX_MODEL_LEN},gpu_memory_utilization=${GPU_MEMORY_UTILIZATION},enable_thinking=True,think_end_token=</think>"
+
+
 
 # Set limit argument if provided
 LIMIT_ARG=""

@@ -38,6 +38,8 @@ sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name meta-llama/Llama-3.1-8B
 ./lm_eval_ehrllm_ehrshot_task.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192 --limit 10 --log_samples
 ```
 
+
+
 ## Arguments
 
 ### Required
@@ -92,6 +94,54 @@ results/ehr_llm/ehrshot/
 ```
 
 ## Common Usage Patterns
+
+### Debugging commands
+
+```bash
+
+lm_eval \
+   --model vllm \
+   --model_args "pretrained=openai/gpt-oss-20b,tensor_parallel_size=1,data_parallel_size=1,dtype=bfloat16,max_model_len=8192,gpu_memory_utilization=0.7,enable_thinking=True'" \
+   --apply_chat_template \
+   --include_path bids_tasks/ehr_llm \
+   --tasks simple_dev_task \
+   --batch_size auto \
+   --output_path results/debug \
+   --log_samples \
+   --limit 10
+
+
+lm_eval \
+   --model vllm \
+   --model_args "pretrained=Qwen/Qwen3-4B,tensor_parallel_size=1,data_parallel_size=1,dtype=bfloat16,max_model_len=8192,gpu_memory_utilization=0.7,enable_thinking=True" \
+   --apply_chat_template \
+   --include_path bids_tasks/ehr_llm \
+   --tasks simple_dev_task \
+   --batch_size auto \
+   --output_path results/debug \
+   --log_samples \
+   --limit 10
+
+
+lm_eval --model hf \
+    --model_args pretrained=openai/gpt-oss-20b \
+    --apply_chat_template \
+    --include_path bids_tasks/ehr_llm \
+    --tasks simple_dev_task \
+    --batch_size auto \
+    --output_path results/debug \
+    --log_samples \
+    --limit 10
+
+
+lm_eval --model hf \
+    --model_args pretrained=Qwen/Qwen3-4B,dp_size=1,tp_size=1,dtype=auto \
+    --apply_chat_template \
+    --include_path bids_tasks/ehr_llm \
+    --tasks simple_dev_task \
+    --batch_size auto
+```
+
 
 ### Development & Testing
 ```bash
