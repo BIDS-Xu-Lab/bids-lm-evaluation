@@ -78,8 +78,7 @@ def f1_score(items):
     preds = unzipped_list[1]
     fscore = f1_score(golds, preds)
 
-    #return np.max(fscore)
-    return fscore
+    return np.max(fscore)
 
 
 @register_aggregation("matthews_corrcoef")
