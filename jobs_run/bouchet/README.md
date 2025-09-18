@@ -22,10 +22,10 @@ Both scripts are fully aligned and use the same task configurations, conda envir
 sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name meta-llama/Llama-3.2-3B-Instruct --max_model_len 8192
 
 # With thinking models
-sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192
+sbatch lm_eval_ehrllm_ehrshot_task_vllm_slurm.sh --model_name Qwen/Qwen3-32B --max_model_len 3072
 
 # Testing with limited samples
-sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name meta-llama/Llama-3.1-8B-Instruct --max_model_len 8192 --limit 100
+sbatch lm_eval_ehrllm_ehrshot_task_vllm_slurm.sh --model_name meta-llama/Llama-3.1-8B-Instruct --max_model_len 8192 --limit 100
 ```
 
 ### Interactive Script

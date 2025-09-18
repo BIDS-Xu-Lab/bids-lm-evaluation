@@ -122,7 +122,6 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Debug: Print received arguments
-echo "$(date): DEBUG - Total arguments received: $#"
 echo "$(date): DEBUG - All arguments: $@"
 echo "$(date): DEBUG - MODEL_NAME='$MODEL_NAME'"
 echo "$(date): DEBUG - MAX_MODEL_LEN='$MAX_MODEL_LEN'"
