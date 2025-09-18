@@ -17,7 +17,7 @@ MODEL_NAME=""
 MAX_MODEL_LEN=""
 LIMIT=""
 BATCH_SIZE="auto"
-GPU_MEMORY_UTILIZATION="0.8"
+GPU_MEMORY_UTILIZATION="0.9"
 LOG_SAMPLES=false
 THINK_END_TOKEN="</think>"
 DEBUG=false
@@ -216,9 +216,8 @@ echo "$(date): vLLM usage tracking disabled to avoid disk quota issues"
 echo "$(date): Using Hugging Face cache directory: $HF_HOME (from ~/.bashrc)"
 
 # Ensure directories exist
-mkdir -p "$RESULTS_ROOT_DIR"
-mkdir -p "/gpfs/radev/home/yl2342/scratch/logs"
-echo "$(date): Results will be saved to: $RESULTS_ROOT_DIR"
+mkdir -p "$OUTPUT_BASE_DIR"
+echo "$(date): Results will be saved to: $OUTPUT_BASE_DIR"
 
 # conda environment setup
 module load miniconda
