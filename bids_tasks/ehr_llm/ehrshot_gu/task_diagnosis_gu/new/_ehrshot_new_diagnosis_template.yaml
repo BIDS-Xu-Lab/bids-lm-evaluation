@@ -13,7 +13,7 @@ test_split: test
 # Generation kwargs
 generation_kwargs:
   until: ["<im_end>"]
-  max_gen_toks: 1024
+  max_gen_toks: 2048
   do_sample: false
   temperature: 0.0
 

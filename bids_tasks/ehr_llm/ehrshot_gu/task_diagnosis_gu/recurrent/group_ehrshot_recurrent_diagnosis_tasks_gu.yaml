@@ -8,7 +8,6 @@ task:
   - ehrshot_recurrent_diagnosis_coronary_arteriosclerosis_gu
   - ehrshot_recurrent_diagnosis_dementia_gu
   - ehrshot_recurrent_diagnosis_depressive_disorder_gu
-  - ehrshot_recurrent_diagnosis_gastric_cancer_gu
   - ehrshot_recurrent_diagnosis_heart_failure_gu
   - ehrshot_recurrent_diagnosis_hyperlipidemia_gu
   - ehrshot_recurrent_diagnosis_hypertension_gu

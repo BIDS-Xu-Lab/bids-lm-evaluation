@@ -19,8 +19,10 @@ MODEL_NAME=""
 MAX_MODEL_LEN=""
 LIMIT=""
 BATCH_SIZE="auto"
-GPU_MEMORY_UTILIZATION="0.7"
+GPU_MEMORY_UTILIZATION="0.8"
 LOG_SAMPLES=false
+THINK_END_TOKEN="</think>"
+DEBUG=false
 
 # Global variables for inference configuration
 TENSOR_PARALLEL_SIZE=1
@@ -53,7 +55,9 @@ usage() {
     echo "                              (default: all samples)"
     echo "  --batch_size <size>         Batch size for evaluation: positive integer or 'auto' (default: auto)"
     echo "  --gpu_memory_util <ratio>   GPU memory utilization ratio 0.0-1.0 (default: 0.8)"
+    echo "  --think_end_token <token>   End token for thinking models (default: </think>)"
     echo "  --log_samples               Log individual sample outputs for debugging"
+    echo "  --debug                     Save results to debug directory structure"
     echo "  --help                      Show this help message"
     echo ""
     echo "Examples:"
@@ -64,6 +68,9 @@ usage() {
     echo "  # Thinking models (automatically includes thinking parameters)"
     echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192"
     echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-4B --max_model_len 32768 --limit 100"
+    echo ""
+    echo "  # Custom think end token"
+    echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192 --think_end_token '</reasoning>'"
     echo ""
     echo "  # Debugging"
     echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192 --limit 10 --log_samples"
@@ -93,8 +100,16 @@ while [[ $# -gt 0 ]]; do
             GPU_MEMORY_UTILIZATION="$2"
             shift 2
             ;;
+        --think_end_token)
+            THINK_END_TOKEN="$2"
+            shift 2
+            ;;
         --log_samples)
             LOG_SAMPLES=true
+            shift 1
+            ;;
+        --debug)
+            DEBUG=true
             shift 1
             ;;
         --help|-h)
@@ -152,9 +167,9 @@ if ! [[ "$GPU_MEMORY_UTILIZATION" =~ ^0*\.?[0-9]+$ ]] || (( $(echo "$GPU_MEMORY_
 fi
 
 # Construct model arguments string (AFTER argument parsing)
-# Note: enable_thinking=True and think_end_token='</think>' are automatically included for all models
+# Note: enable_thinking=True and think_end_token are automatically included for all models
 # This enables thinking/reasoning capabilities for models that support it (e.g., Qwen models)
-MODEL_ARGS="pretrained=${MODEL_NAME},tensor_parallel_size=${TENSOR_PARALLEL_SIZE},data_parallel_size=${DATA_PARALLEL_SIZE},dtype=${DTYPE},max_model_len=${MAX_MODEL_LEN},gpu_memory_utilization=${GPU_MEMORY_UTILIZATION},enable_thinking=True,think_end_token=</think>"
+MODEL_ARGS="pretrained=${MODEL_NAME},tensor_parallel_size=${TENSOR_PARALLEL_SIZE},data_parallel_size=${DATA_PARALLEL_SIZE},dtype=${DTYPE},max_model_len=${MAX_MODEL_LEN},gpu_memory_utilization=${GPU_MEMORY_UTILIZATION},enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
 
 
 
@@ -168,6 +183,15 @@ fi
 LOG_SAMPLES_ARG=""
 if [ "$LOG_SAMPLES" = true ]; then
     LOG_SAMPLES_ARG="--log_samples"
+fi
+
+# Set output directory based on debug flag
+if [ "$DEBUG" = true ]; then
+    OUTPUT_BASE_DIR="${RESULTS_ROOT_DIR}/debug"
+    echo "$(date): DEBUG MODE: Results will be saved to debug directory: $OUTPUT_BASE_DIR"
+else
+    OUTPUT_BASE_DIR="${RESULTS_ROOT_DIR}/ehr_llm/ehrshot"
+    echo "$(date): Results will be saved to: $OUTPUT_BASE_DIR"
 fi
 
 # environment setup
@@ -200,8 +224,7 @@ echo "$(date): Results will be saved to: $RESULTS_ROOT_DIR"
 
 # conda environment setup
 module load miniconda
-conda activate bids_lm_eval # vllm should be 0.9.1
-
+conda activate bids_lm_eval 
 # EHRShot benchmark evaluation
 # Includes thinking model support with enable_thinking=True and think_end_token='</think>'
 
@@ -222,7 +245,7 @@ lm_eval \
    --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_inpatient_tasks_gu \
    --batch_size ${BATCH_SIZE} \
-   --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_inpatient/max_len_${MAX_MODEL_LEN} \
+   --output_path ${OUTPUT_BASE_DIR}/task_inpatient/max_len_${MAX_MODEL_LEN} \
    --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "inpatient"}' \
    ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
 
@@ -245,7 +268,7 @@ lm_eval \
    --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_measurement_lab_tasks_gu \
    --batch_size ${BATCH_SIZE} \
-   --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_measurement/labs/max_len_${MAX_MODEL_LEN} \
+   --output_path ${OUTPUT_BASE_DIR}/task_measurement/lab/max_len_${MAX_MODEL_LEN} \
    --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "measurement_lab"}' \
    ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
 
@@ -265,7 +288,7 @@ lm_eval \
    --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_measurement_vital_tasks_gu \
    --batch_size ${BATCH_SIZE} \
-   --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_measurement/vitals/max_len_${MAX_MODEL_LEN} \
+   --output_path ${OUTPUT_BASE_DIR}/task_measurement/vital/max_len_${MAX_MODEL_LEN} \
    --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "measurement_vital"}' \
    ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
 
@@ -286,7 +309,7 @@ lm_eval \
    --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_new_diagnosis_tasks_gu \
    --batch_size ${BATCH_SIZE} \
-   --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_diagnosis/new/max_len_${MAX_MODEL_LEN} \
+   --output_path ${OUTPUT_BASE_DIR}/task_diagnosis/new/max_len_${MAX_MODEL_LEN} \
    --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "diagnosis_new"}' \
    ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
 
@@ -306,7 +329,7 @@ lm_eval \
    --include_path ${INCLUDE_PATH} \
    --tasks group_ehrshot_recurrent_diagnosis_tasks_gu \
    --batch_size ${BATCH_SIZE} \
-   --output_path ${RESULTS_ROOT_DIR}/ehr_llm/ehrshot/task_diagnosis/recurrent/max_len_${MAX_MODEL_LEN} \
+   --output_path ${OUTPUT_BASE_DIR}/task_diagnosis/recurrent/max_len_${MAX_MODEL_LEN} \
    --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "diagnosis_recurrent"}' \
    ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
 
