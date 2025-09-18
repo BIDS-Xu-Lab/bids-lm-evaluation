@@ -203,8 +203,7 @@ echo "$(date): Using Hugging Face cache directory: $HF_HOME (from ~/.bashrc)"
 
 # Ensure directories exist
 mkdir -p "$OUTPUT_BASE_DIR"
-mkdir -p "/gpfs/radev/home/yl2342/scratch/logs"
-echo "$(date): Results will be saved to: $RESULTS_ROOT_DIR"
+echo "$(date): Results will be saved to: $OUTPUT_BASE_DIR"
 
 # conda environment setup
 module load miniconda

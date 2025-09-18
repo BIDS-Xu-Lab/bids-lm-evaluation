@@ -6,7 +6,7 @@
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:h200:1
 #SBATCH --time=24:00:00
-#SBATCH --qos=qos_bids
+##SBATCH --qos=qos_bids
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -219,8 +219,7 @@ echo "$(date): Using Hugging Face cache directory: $HF_HOME (from ~/.bashrc)"
 
 # Ensure directories exist
 mkdir -p "$OUTPUT_BASE_DIR"
-mkdir -p "/gpfs/radev/home/yl2342/scratch/logs"
-echo "$(date): Results will be saved to: $RESULTS_ROOT_DIR"
+echo "$(date): Results will be saved to: $OUTPUT_BASE_DIR"
 
 # conda environment setup
 module load miniconda
