@@ -21,6 +21,7 @@ GPU_MEMORY_UTILIZATION="0.9"
 LOG_SAMPLES=false
 THINK_END_TOKEN="</think>"
 DEBUG=false
+BACKEND="vllm"
 
 # Global variables for inference configuration
 TENSOR_PARALLEL_SIZE=1
@@ -49,6 +50,7 @@ usage() {
     echo "  --max_model_len <length>    Maximum model length (e.g., 8192, 32768)"
     echo ""
     echo "Optional arguments:"
+    echo "  --backend <backend>         Backend to use: 'vllm' or 'hf' (default: vllm)"
     echo "  --limit <number>            Number of samples to evaluate per task"
     echo "                              (default: all samples)"
     echo "  --batch_size <size>         Batch size for evaluation: positive integer or 'auto' (default: auto)"
@@ -59,13 +61,16 @@ usage() {
     echo "  --help                      Show this help message"
     echo ""
     echo "Examples:"
-    echo "  # Standard models"
+    echo "  # Standard models with vLLM backend"
     echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name meta-llama/Llama-3.2-3B-Instruct --max_model_len 8192"
     echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name meta-llama/Llama-3.1-8B-Instruct --max_model_len 8192 --limit 1000"
     echo ""
+    echo "  # Standard models with HuggingFace backend"
+    echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name meta-llama/Llama-3.2-3B-Instruct --max_model_len 8192 --backend hf"
+    echo ""
     echo "  # Thinking models (automatically includes thinking parameters)"
     echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192"
-    echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-4B --max_model_len 32768 --limit 100"
+    echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-4B --max_model_len 32768 --limit 100 --backend hf"
     echo ""
     echo "  # Custom think end token"
     echo "  sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192 --think_end_token '</reasoning>'"
@@ -84,6 +89,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --max_model_len)
             MAX_MODEL_LEN="$2"
+            shift 2
+            ;;
+        --backend)
+            BACKEND="$2"
             shift 2
             ;;
         --limit)
@@ -122,9 +131,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Debug: Print received arguments
+echo "$(date): DEBUG - Total arguments received: $#"
 echo "$(date): DEBUG - All arguments: $@"
 echo "$(date): DEBUG - MODEL_NAME='$MODEL_NAME'"
 echo "$(date): DEBUG - MAX_MODEL_LEN='$MAX_MODEL_LEN'"
+echo "$(date): DEBUG - BACKEND='$BACKEND'"
 
 # Validate required arguments
 if [ -z "$MODEL_NAME" ]; then
@@ -137,6 +148,12 @@ if [ -z "$MAX_MODEL_LEN" ]; then
     echo "Error: --max_model_len is required"
     echo ""
     usage
+fi
+
+# Validate backend
+if [ "$BACKEND" != "vllm" ] && [ "$BACKEND" != "hf" ]; then
+    echo "Error: --backend must be either 'vllm' or 'hf'"
+    exit 1
 fi
 
 # Validate max_model_len is a number
@@ -163,11 +180,16 @@ if ! [[ "$GPU_MEMORY_UTILIZATION" =~ ^0*\.?[0-9]+$ ]] || (( $(echo "$GPU_MEMORY_
     exit 1
 fi
 
-# Construct model arguments string (AFTER argument parsing)
-# Note: enable_thinking=True and think_end_token are automatically included for all models
-# This enables thinking/reasoning capabilities for models that support it (e.g., Qwen models)
-MODEL_ARGS="pretrained=${MODEL_NAME},tensor_parallel_size=${TENSOR_PARALLEL_SIZE},data_parallel_size=${DATA_PARALLEL_SIZE},dtype=${DTYPE},max_model_len=${MAX_MODEL_LEN},gpu_memory_utilization=${GPU_MEMORY_UTILIZATION},enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
-
+# Construct model arguments string based on backend (AFTER argument parsing)
+if [ "$BACKEND" = "vllm" ]; then
+    # vLLM backend configuration
+    # Note: enable_thinking=True and think_end_token are automatically included for all models
+    # This enables thinking/reasoning capabilities for models that support it (e.g., Qwen models)
+    MODEL_ARGS="pretrained=${MODEL_NAME},tensor_parallel_size=${TENSOR_PARALLEL_SIZE},data_parallel_size=${DATA_PARALLEL_SIZE},dtype=${DTYPE},max_model_len=${MAX_MODEL_LEN},gpu_memory_utilization=${GPU_MEMORY_UTILIZATION},enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
+elif [ "$BACKEND" = "hf" ]; then
+    # HuggingFace backend configuration
+    MODEL_ARGS="pretrained=${MODEL_NAME},dtype=${DTYPE},max_length=${MAX_MODEL_LEN},trust_remote_code=true,device_map=auto,enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
+fi
 
 
 # Set limit argument if provided
@@ -235,7 +257,7 @@ fi
 ## Task 1: Inpatient tasks
 echo "$(date): Starting inpatient tasks..."
 lm_eval \
-   --model vllm \
+   --model ${BACKEND} \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
    --include_path ${INCLUDE_PATH} \
@@ -258,7 +280,7 @@ fi
 ## Task 2: Measurement tasks (labs and vitals)
 echo "$(date): Starting measurement lab tasks..."
 lm_eval \
-   --model vllm \
+   --model ${BACKEND} \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
    --include_path ${INCLUDE_PATH} \
@@ -278,7 +300,7 @@ fi
 
 echo "$(date): Starting measurement vital tasks..."
 lm_eval \
-   --model vllm \
+   --model ${BACKEND} \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
    --include_path ${INCLUDE_PATH} \
@@ -299,7 +321,7 @@ fi
 ## Task 3: Diagnosis tasks (new and recurrent)
 echo "$(date): Starting new diagnosis tasks..."
 lm_eval \
-   --model vllm \
+   --model ${BACKEND} \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
    --include_path ${INCLUDE_PATH} \
@@ -319,7 +341,7 @@ fi
 
 echo "$(date): Starting recurrent diagnosis tasks..."
 lm_eval \
-   --model vllm \
+   --model ${BACKEND} \
    --model_args ${MODEL_ARGS} \
    --apply_chat_template \
    --include_path ${INCLUDE_PATH} \
