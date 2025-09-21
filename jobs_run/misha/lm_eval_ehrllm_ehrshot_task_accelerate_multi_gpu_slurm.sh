@@ -1,0 +1,343 @@
+#!/bin/bash
+
+#SBATCH --job-name=ehrllm_ehrshot_task
+#SBATCH --output=/gpfs/radev/home/yl2342/scratch/logs/slurm_%j.log
+#SBATCH --error=/gpfs/radev/home/yl2342/scratch/logs/slurm_%j.err
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:h200:4
+#SBATCH --time=24:00:00
+##SBATCH --qos=qos_bids
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=512G
+#SBATCH --mail-user=yuntian.liu@yale.edu
+#SBATCH --mail-type=ALL
+
+# Make sure to run this slurm script matched with the accelerate config
+# run accelerate config beforehand to set up GPU config if needed
+
+# Default values
+MODEL_NAME=""
+MAX_MODEL_LEN=""
+LIMIT=""
+BATCH_SIZE="auto"
+LOG_SAMPLES=false
+THINK_END_TOKEN="</think>"
+DEBUG=false
+
+# Global variables for inference configuration
+DTYPE="bfloat16"
+
+# Output directory configuration
+RESULTS_ROOT_DIR="/gpfs/radev/home/yl2342/project/bids-lm-evaluation/results"
+
+# Task include path configuration
+INCLUDE_PATH="/gpfs/radev/home/yl2342/project/bids-lm-evaluation/bids_tasks/ehr_llm"
+
+
+# Function to display usage
+usage() {
+    echo "Usage: sbatch $0 --model_name <model> --max_model_len <length> [OPTIONS]"
+    echo ""
+    echo "This is a SLURM script. Submit with: sbatch $0 [arguments]"
+    echo ""
+    echo "Required arguments:"
+    echo "  --model_name <model>        Model name/path"
+    echo "                              meta-llama: meta-llama/Llama-3.2-3B-Instruct, meta-llama/Llama-3.1-8B-Instruct"
+    echo "                              Qwen: Qwen/Qwen3-1.7B, Qwen/Qwen3-4B, Qwen/Qwen3-8B, Qwen/Qwen3-14B"
+    echo "  --max_model_len <length>    Maximum model length (e.g., 8192, 32768)"
+    echo ""
+    echo "Optional arguments:"
+    echo "  --limit <number>            Number of samples to evaluate per task"
+    echo "                              (default: all samples)"
+    echo "  --batch_size <size>         Batch size for evaluation: positive integer or 'auto' (default: auto)"
+    echo "  --think_end_token <token>   End token for thinking models (default: </think>)"
+    echo "  --log_samples               Log individual sample outputs for debugging"
+    echo "  --debug                     Save results to debug directory structure"
+    echo "  --help                      Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  # Standard models with HuggingFace backend (accelerate)"
+    echo "  sbatch lm_eval_ehrllm_ehrshot_task_accelerate_multi_gpu_slurm.sh --model_name meta-llama/Llama-3.2-3B-Instruct --max_model_len 8192"
+    echo "  sbatch lm_eval_ehrllm_ehrshot_task_accelerate_multi_gpu_slurm.sh --model_name meta-llama/Llama-3.1-8B-Instruct --max_model_len 8192 --limit 1000"
+    echo ""
+    echo "  # Thinking models (automatically includes thinking parameters)"
+    echo "  sbatch lm_eval_ehrllm_ehrshot_task_accelerate_multi_gpu_slurm.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192"
+    echo "  sbatch lm_eval_ehrllm_ehrshot_task_accelerate_multi_gpu_slurm.sh --model_name Qwen/Qwen3-4B --max_model_len 32768 --limit 100"
+    echo ""
+    echo "  # Custom think end token"
+    echo "  sbatch lm_eval_ehrllm_ehrshot_task_accelerate_multi_gpu_slurm.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192 --think_end_token '</reasoning>'"
+    echo ""
+    echo "  # Debugging"
+    echo "  sbatch lm_eval_ehrllm_ehrshot_task_accelerate_multi_gpu_slurm.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192 --limit 10 --log_samples"
+    exit 1
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --model_name)
+            MODEL_NAME="$2"
+            shift 2
+            ;;
+        --max_model_len)
+            MAX_MODEL_LEN="$2"
+            shift 2
+            ;;
+        --limit)
+            LIMIT="$2"
+            shift 2
+            ;;
+        --batch_size)
+            BATCH_SIZE="$2"
+            shift 2
+            ;;
+        --think_end_token)
+            THINK_END_TOKEN="$2"
+            shift 2
+            ;;
+        --log_samples)
+            LOG_SAMPLES=true
+            shift 1
+            ;;
+        --debug)
+            DEBUG=true
+            shift 1
+            ;;
+        --help|-h)
+            usage
+            ;;
+        *)
+            echo "Error: Unknown argument '$1'"
+            echo ""
+            usage
+            ;;
+    esac
+done
+
+# Debug: Print received arguments
+echo "$(date): DEBUG - All arguments: $@"
+echo "$(date): DEBUG - MODEL_NAME='$MODEL_NAME'"
+echo "$(date): DEBUG - MAX_MODEL_LEN='$MAX_MODEL_LEN'"
+
+# Validate required arguments
+if [ -z "$MODEL_NAME" ]; then
+    echo "Error: --model_name is required"
+    echo ""
+    usage
+fi
+
+if [ -z "$MAX_MODEL_LEN" ]; then
+    echo "Error: --max_model_len is required"
+    echo ""
+    usage
+fi
+
+
+
+# Validate max_model_len is a number
+if ! [[ "$MAX_MODEL_LEN" =~ ^[0-9]+$ ]]; then
+    echo "Error: --max_model_len must be a positive integer"
+    exit 1
+fi
+
+# Validate limit is a number if provided
+if [ -n "$LIMIT" ] && ! [[ "$LIMIT" =~ ^[0-9]+$ ]]; then
+    echo "Error: --limit must be a positive integer"
+    exit 1
+fi
+
+# Validate batch_size is a number or "auto"
+if [ "$BATCH_SIZE" != "auto" ] && ! [[ "$BATCH_SIZE" =~ ^[0-9]+$ ]]; then
+    echo "Error: --batch_size must be a positive integer or 'auto'"
+    exit 1
+fi
+
+
+
+# Construct model arguments string for HuggingFace backend with accelerate
+# Note: enable_thinking=True and think_end_token are automatically included for all models
+# This enables thinking/reasoning capabilities for models that support it (e.g., Qwen models)
+MODEL_ARGS="pretrained=${MODEL_NAME},dtype=${DTYPE},max_length=${MAX_MODEL_LEN},trust_remote_code=true,enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
+
+
+# Set limit argument if provided
+LIMIT_ARG=""
+if [ -n "$LIMIT" ]; then
+    LIMIT_ARG="--limit $LIMIT"
+fi
+
+# Set log_samples argument if provided
+LOG_SAMPLES_ARG=""
+if [ "$LOG_SAMPLES" = true ]; then
+    LOG_SAMPLES_ARG="--log_samples"
+fi
+
+# Set output directory based on debug flag
+if [ "$DEBUG" = true ]; then
+    OUTPUT_BASE_DIR="${RESULTS_ROOT_DIR}/debug"
+    echo "$(date): DEBUG MODE: Results will be saved to debug directory: $OUTPUT_BASE_DIR"
+else
+    OUTPUT_BASE_DIR="${RESULTS_ROOT_DIR}/ehr_llm/ehrshot"
+    echo "$(date): Results will be saved to: $OUTPUT_BASE_DIR"
+fi
+
+# environment setup
+# HuggingFace cache is configured in ~/.bashrc to use scratch space
+
+# Set Hugging Face token from the saved token file
+if [ -f "$HF_HOME/token" ]; then
+    export HF_TOKEN=$(cat "$HF_HOME/token")
+    echo "$(date): Hugging Face token loaded from $HF_HOME/token"
+else
+    echo "$(date): Warning: No Hugging Face token found at $HF_HOME/token. You may need to run 'huggingface-cli login'"
+fi
+
+# PyTorch and vLLM optimization settings
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
+export VLLM_USAGE_STATS_DISABLED=1
+
+# Ensure torch compile cache directory exists (configured in ~/.bashrc)
+mkdir -p "$TORCH_COMPILE_CACHE_DIR"
+
+echo "$(date): Using PyTorch compile cache directory: $TORCH_COMPILE_CACHE_DIR"
+echo "$(date): vLLM usage tracking disabled to avoid disk quota issues"
+
+echo "$(date): Using Hugging Face cache directory: $HF_HOME (from ~/.bashrc)"
+
+# Ensure directories exist
+mkdir -p "$OUTPUT_BASE_DIR"
+echo "$(date): Results will be saved to: $OUTPUT_BASE_DIR"
+
+# conda environment setup
+module load miniconda
+conda activate bids_lm_eval 
+# EHRShot benchmark evaluation
+# Includes thinking model support with enable_thinking=True and think_end_token='</think>'
+
+echo "$(date): Starting evaluation for ${MODEL_NAME} with max_model_len ${MAX_MODEL_LEN}"
+echo "$(date): Model arguments: ${MODEL_ARGS}"
+if [ -n "$LIMIT" ]; then
+    echo "$(date): Using limit of ${LIMIT} samples per task"
+else
+    echo "$(date): Using all available samples"
+fi
+
+## Task 1: Inpatient tasks
+echo "$(date): Starting inpatient tasks..."
+accelerate launch -m lm_eval \
+   --model hf \
+   --model_args ${MODEL_ARGS} \
+   --device cuda \
+   --apply_chat_template \
+   --include_path ${INCLUDE_PATH} \
+   --tasks group_ehrshot_inpatient_tasks_gu \
+   --batch_size ${BATCH_SIZE} \
+   --output_path ${OUTPUT_BASE_DIR}/task_inpatient/max_len_${MAX_MODEL_LEN} \
+   --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "inpatient"}' \
+   ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
+
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    echo "$(date): ✓ Inpatient tasks completed successfully"
+else
+    echo "$(date): ✗ Inpatient tasks failed with exit code $exit_code"
+    exit $exit_code
+fi
+
+
+
+## Task 2: Measurement tasks (labs and vitals)
+echo "$(date): Starting measurement lab tasks..."
+accelerate launch -m lm_eval \
+   --model hf \
+   --model_args ${MODEL_ARGS} \
+   --device cuda \
+   --apply_chat_template \
+   --include_path ${INCLUDE_PATH} \
+   --tasks group_ehrshot_measurement_lab_tasks_gu \
+   --batch_size ${BATCH_SIZE} \
+   --output_path ${OUTPUT_BASE_DIR}/task_measurement/lab/max_len_${MAX_MODEL_LEN} \
+   --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "measurement_lab"}' \
+   ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
+
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    echo "$(date): ✓ Measurement lab tasks completed successfully"
+else
+    echo "$(date): ✗ Measurement lab tasks failed with exit code $exit_code"
+    exit $exit_code
+fi
+
+echo "$(date): Starting measurement vital tasks..."
+accelerate launch -m lm_eval \
+   --model hf \
+   --model_args ${MODEL_ARGS} \
+   --device cuda \
+   --apply_chat_template \
+   --include_path ${INCLUDE_PATH} \
+   --tasks group_ehrshot_measurement_vital_tasks_gu \
+   --batch_size ${BATCH_SIZE} \
+   --output_path ${OUTPUT_BASE_DIR}/task_measurement/vital/max_len_${MAX_MODEL_LEN} \
+   --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "measurement_vital"}' \
+   ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
+
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    echo "$(date): ✓ Measurement vital tasks completed successfully"
+else
+    echo "$(date): ✗ Measurement vital tasks failed with exit code $exit_code"
+    exit $exit_code
+fi
+
+## Task 3: Diagnosis tasks (new and recurrent)
+echo "$(date): Starting new diagnosis tasks..."
+accelerate launch -m lm_eval \
+   --model hf \
+   --model_args ${MODEL_ARGS} \
+   --device cuda \
+   --apply_chat_template \
+   --include_path ${INCLUDE_PATH} \
+   --tasks group_ehrshot_new_diagnosis_tasks_gu \
+   --batch_size ${BATCH_SIZE} \
+   --output_path ${OUTPUT_BASE_DIR}/task_diagnosis/new/max_len_${MAX_MODEL_LEN} \
+   --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "diagnosis_new"}' \
+   ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
+
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    echo "$(date): ✓ New diagnosis tasks completed successfully"
+else
+    echo "$(date): ✗ New diagnosis tasks failed with exit code $exit_code"
+    exit $exit_code
+fi
+
+echo "$(date): Starting recurrent diagnosis tasks..."
+accelerate launch -m lm_eval \
+   --model hf \
+   --model_args ${MODEL_ARGS} \
+   --device cuda \
+   --apply_chat_template \
+   --include_path ${INCLUDE_PATH} \
+   --tasks group_ehrshot_recurrent_diagnosis_tasks_gu \
+   --batch_size ${BATCH_SIZE} \
+   --output_path ${OUTPUT_BASE_DIR}/task_diagnosis/recurrent/max_len_${MAX_MODEL_LEN} \
+   --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "diagnosis_recurrent"}' \
+   ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
+
+exit_code=$?
+if [ $exit_code -eq 0 ]; then
+    echo "$(date): ✓ Recurrent diagnosis tasks completed successfully"
+else
+    echo "$(date): ✗ Recurrent diagnosis tasks failed with exit code $exit_code"
+    exit $exit_code
+fi
+
+echo "$(date): All evaluation tasks completed!"
+
+# Cleanup: deactivate conda environment and unload miniconda module
+echo "$(date): Cleaning up environment..."
+conda deactivate
+module unload miniconda
+echo "$(date): Environment cleanup completed"
