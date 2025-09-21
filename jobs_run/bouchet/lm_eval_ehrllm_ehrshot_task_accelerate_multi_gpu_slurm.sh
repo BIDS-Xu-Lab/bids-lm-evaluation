@@ -157,7 +157,7 @@ fi
 # Construct model arguments string for HuggingFace backend with accelerate
 # Note: enable_thinking=True and think_end_token are automatically included for all models
 # This enables thinking/reasoning capabilities for models that support it (e.g., Qwen models)
-MODEL_ARGS="pretrained=${MODEL_NAME},dtype=${DTYPE},max_length=${MAX_MODEL_LEN},trust_remote_code=true,enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
+MODEL_ARGS="pretrained=${MODEL_NAME},dtype=${DTYPE},max_length=${MAX_MODEL_LEN},trust_remote_code=True,enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
 
 
 # Set limit argument if provided

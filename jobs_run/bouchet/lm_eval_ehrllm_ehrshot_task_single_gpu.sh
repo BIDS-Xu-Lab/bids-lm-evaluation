@@ -174,7 +174,7 @@ if [ "$BACKEND" = "vllm" ]; then
     MODEL_ARGS="pretrained=${MODEL_NAME},tensor_parallel_size=${TENSOR_PARALLEL_SIZE},data_parallel_size=${DATA_PARALLEL_SIZE},dtype=${DTYPE},max_model_len=${MAX_MODEL_LEN},gpu_memory_utilization=${GPU_MEMORY_UTILIZATION},enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
 elif [ "$BACKEND" = "hf" ]; then
     # HuggingFace backend configuration
-    MODEL_ARGS="pretrained=${MODEL_NAME},dtype=${DTYPE},max_length=${MAX_MODEL_LEN},trust_remote_code=true,device_map=auto,enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
+    MODEL_ARGS="pretrained=${MODEL_NAME},dtype=${DTYPE},max_length=${MAX_MODEL_LEN},trust_remote_code=True,device_map=auto,enable_thinking=True,think_end_token=${THINK_END_TOKEN}"
 fi
 
 

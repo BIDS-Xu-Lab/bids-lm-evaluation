@@ -35,8 +35,11 @@ sbatch lm_eval_ehrllm_ehrshot_task_slurm.sh --model_name meta-llama/Llama-3.1-8B
 ./lm_eval_ehrllm_ehrshot_task.sh --model_name meta-llama/Llama-3.2-3B-Instruct --max_model_len 8192
 
 # With debugging
-./lm_eval_ehrllm_ehrshot_task.sh --model_name Qwen/Qwen3-1.7B --max_model_len 8192 --limit 10 --log_samples
-sbatch lm_eval_ehrllm_ehrshot_task_vllm_slurm.sh --model_name Qwen/Qwen3-4B --max_model_len 8192
+bash lm_eval_ehrllm_ehrshot_task_vllm.sh --model_name baichuan-inc/Baichuan-M2-32B --max_model_len 3072 --limit 10 --log_samples --debug
+bash lm_eval_ehrllm_ehrshot_task_singe_gpu.sh --backend hf --model_name openai/gpt-oss-20b --max_model_len 3072 --limit 10 --log_samples --debug
+
+bash lm_eval_ehrllm_ehrshot_task_accelerate_multi_gpu.sh --model_name openai/gpt-oss-20b --max_model_len 4096  --think_end_token assistantfinal
+
 ```
 
 
@@ -125,7 +128,7 @@ lm_eval \
 
 
 lm_eval --model hf \
-    --model_args pretrained=openai/gpt-oss-20b \
+    --model_args "pretrained=openai/gpt-oss-20b,max_length=3072,trust_remote_code=true,device_map=auto,dtype=bfloat16,attn_implementation=flash_attention_2,enable_thinking=True" \
     --apply_chat_template \
     --include_path bids_tasks/ehr_llm \
     --tasks simple_dev_task \
@@ -135,12 +138,42 @@ lm_eval --model hf \
     --limit 10
 
 
+
+lm_eval --model hf \
+    --model_args "pretrained=openai/gpt-oss-20b,max_length=3072,trust_remote_code=True,device_map=auto,enable_thinking=True" \
+    --apply_chat_template \
+    --include_path bids_tasks/ehr_llm \
+    --tasks simple_dev_task \
+    --batch_size auto \
+    --output_path results/debug \
+    --log_samples \
+    --limit 10
+
+
+accelerate launch -m lm_eval --model hf \
+    --model_args "pretrained=openai/gpt-oss-20b,max_length=3072,trust_remote_code=True,enable_thinking=True,think_end_token=assistantfinal" \
+    --device cuda \
+    --apply_chat_template \
+    --include_path bids_tasks/ehr_llm \
+    --tasks group_ehrshot_new_diagnosis_tasks_gu \
+    --batch_size auto \
+    --output_path results/debug 
+
+
+
 lm_eval --model hf \
     --model_args pretrained=Qwen/Qwen3-4B,dp_size=1,tp_size=1,dtype=auto \
     --apply_chat_template \
     --include_path bids_tasks/ehr_llm \
     --tasks simple_dev_task \
     --batch_size auto
+
+
+lm_eval --model hf \
+    --model_args '{"pretrained":"model_name","chat_template_args":{"custom_param":"value","enable_thinking":true}}' \
+    --tasks hellaswag
+
+
 ```
 
 
