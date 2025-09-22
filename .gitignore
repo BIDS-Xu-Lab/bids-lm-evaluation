@@ -47,5 +47,5 @@ examples/wandb/
 *.spec
 
 
-# debug
-debug/
+# debug results
+results/debug/
