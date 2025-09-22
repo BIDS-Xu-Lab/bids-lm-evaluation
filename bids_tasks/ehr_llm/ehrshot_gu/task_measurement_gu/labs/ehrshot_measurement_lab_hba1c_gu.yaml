@@ -2,6 +2,6 @@ include: "_ehrshot_measurement_lab_template.yaml"
 task: ehrshot_measurement_lab_hba1c_mc
 dataset_kwargs:
   data_files:
-    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_measurement/hba1c_test/*.parquet
+    test: /home/yl2342/project_pi_hx235/yl2342/data/ehrshot/visit_oriented_ehr/task_measurement/hba1c_test/*.parquet
 metadata:
   description: "EHR measurement prediction task for HbA1c: predict next measurement normal/abnormal status (≤6.5% = normal, >6.5% = abnormal)"

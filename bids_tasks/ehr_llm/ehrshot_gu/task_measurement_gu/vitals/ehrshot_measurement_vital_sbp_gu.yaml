@@ -2,6 +2,6 @@ include: "_ehrshot_measurement_vital_template.yaml"
 task: ehrshot_measurement_vital_sbp_gu
 dataset_kwargs:
   data_files:
-    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_measurement/sbp_test/*.parquet
+    test: /home/yl2342/project_pi_hx235/yl2342/data/ehrshot/visit_oriented_ehr/task_measurement/sbp_test/*.parquet
 metadata:
   description: "EHR vital signs prediction task for systolic blood pressure: predict next measurement normal/abnormal status (≤140 mmHg = normal, >140 mmHg = abnormal)" 

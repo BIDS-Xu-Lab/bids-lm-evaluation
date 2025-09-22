@@ -4,7 +4,7 @@ dataset_path: parquet
 dataset_name: null
 dataset_kwargs:
   data_files:
-    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_measurement/alt_test/*.parquet
+    test: /home/yl2342/project_pi_hx235/yl2342/data/ehrshot/visit_oriented_ehr/task_measurement/alt_test/*.parquet
 output_type: multiple_choice
 training_split: null
 validation_split: null

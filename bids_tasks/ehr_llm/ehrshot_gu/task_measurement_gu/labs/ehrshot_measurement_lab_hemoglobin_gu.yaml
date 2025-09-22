@@ -2,6 +2,6 @@ include: "_ehrshot_measurement_lab_template.yaml"
 task: ehrshot_measurement_lab_hemoglobin_gu
 dataset_kwargs:
   data_files:
-    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_measurement/hemoglobin_test/*.parquet
+    test: /home/yl2342/project_pi_hx235/yl2342/data/ehrshot/visit_oriented_ehr/task_measurement/hemoglobin_test/*.parquet
 metadata:
   description: "EHR measurement prediction task for hemoglobin: predict next measurement normal/abnormal status (≥12 g/dL = normal, <12 g/dL = abnormal)"

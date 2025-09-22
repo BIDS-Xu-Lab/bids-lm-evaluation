@@ -20,7 +20,7 @@ filter_list:
       - function: remove_whitespace
       - function: lowercase
       - function: regex
-        regex_pattern: "(?s)\\b(yes|no)\\b"
+        regex_pattern: "(?s)(yes|no)"
         group_select: 0
         fallback: "no"
       - function: map

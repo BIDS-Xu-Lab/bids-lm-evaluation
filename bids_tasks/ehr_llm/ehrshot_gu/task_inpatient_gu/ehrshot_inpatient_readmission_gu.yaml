@@ -2,7 +2,7 @@ include: "_ehrshot_inpatient_template.yaml"
 task: ehrshot_inpatient_readmission_gu
 dataset_kwargs:
   data_files:
-    test: /gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr/task_operational/task_readmission/task_readmission_test/*.parquet
+    test: /home/yl2342/project_pi_hx235/yl2342/data/ehrshot/visit_oriented_ehr/task_operational/task_readmission/task_readmission_test/*.parquet
 # Custom prompt and target functions
 doc_to_text: !function utils.doc_to_text_readmission
 doc_to_target: !function utils.doc_to_target_readmission
