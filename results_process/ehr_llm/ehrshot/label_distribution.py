@@ -31,7 +31,7 @@ class EHRShotLabelAnalyzer:
             split_suffix: Suffix for the data split to analyze (e.g., "_test", "_all")
         """
         if data_base_path is None:
-            self.data_base_path = "/gpfs/radev/pi/xu_hua/shared/ehr_llm/ehrshot/visit_oriented_ehr"
+            self.data_base_path = "/home/yl2342/project_pi_hx235/yl2342/data/ehrshot/visit_oriented_ehr"
         else:
             self.data_base_path = data_base_path
             

@@ -46,8 +46,7 @@ class EHRShotResultsExtractor:
             # Look for results in common locations relative to results_process
             possible_paths = [
                 script_dir / "../../../results/ehr_llm/ehrshot",
-                Path("/gpfs/radev/home/yl2342/project/bids-lm-evaluation/results/ehr_llm/ehrshot"),
-                Path("/gpfs/radev/home/yl2342/project/lm-evaluation-harness/results/ehr_llm/ehrshot"),
+                Path("/home/yl2342/project_pi_hx235/yl2342/bids-lm-evaluation/results_process/ehr_llm/ehrshot"),
                 script_dir.parent.parent.parent / "results/ehr_llm/ehrshot",
                 Path("./results/ehr_llm/ehrshot"),
             ]
