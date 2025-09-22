@@ -222,72 +222,72 @@ else
     echo "$(date): Using all available samples"
 fi
 
-## Task 1: Inpatient tasks
-echo "$(date): Starting inpatient tasks..."
-accelerate launch -m lm_eval \
-   --model hf \
-   --model_args ${MODEL_ARGS} \
-   --device cuda \
-   --apply_chat_template \
-   --include_path ${INCLUDE_PATH} \
-   --tasks group_ehrshot_inpatient_tasks_gu \
-   --batch_size ${BATCH_SIZE} \
-   --output_path ${OUTPUT_BASE_DIR}/task_inpatient/max_len_${MAX_MODEL_LEN} \
-   --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "inpatient"}' \
-   ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
+# ## Task 1: Inpatient tasks
+# echo "$(date): Starting inpatient tasks..."
+# accelerate launch -m lm_eval \
+#    --model hf \
+#    --model_args ${MODEL_ARGS} \
+#    --device cuda \
+#    --apply_chat_template \
+#    --include_path ${INCLUDE_PATH} \
+#    --tasks group_ehrshot_inpatient_tasks_gu \
+#    --batch_size ${BATCH_SIZE} \
+#    --output_path ${OUTPUT_BASE_DIR}/task_inpatient/max_len_${MAX_MODEL_LEN} \
+#    --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "inpatient"}' \
+#    ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
 
-exit_code=$?
-if [ $exit_code -eq 0 ]; then
-    echo "$(date): ✓ Inpatient tasks completed successfully"
-else
-    echo "$(date): ✗ Inpatient tasks failed with exit code $exit_code"
-    exit $exit_code
-fi
+# exit_code=$?
+# if [ $exit_code -eq 0 ]; then
+#     echo "$(date): ✓ Inpatient tasks completed successfully"
+# else
+#     echo "$(date): ✗ Inpatient tasks failed with exit code $exit_code"
+#     exit $exit_code
+# fi
 
 
 
-## Task 2: Measurement tasks (labs and vitals)
-echo "$(date): Starting measurement lab tasks..."
-accelerate launch -m lm_eval \
-   --model hf \
-   --model_args ${MODEL_ARGS} \
-   --device cuda \
-   --apply_chat_template \
-   --include_path ${INCLUDE_PATH} \
-   --tasks group_ehrshot_measurement_lab_tasks_gu \
-   --batch_size ${BATCH_SIZE} \
-   --output_path ${OUTPUT_BASE_DIR}/task_measurement/lab/max_len_${MAX_MODEL_LEN} \
-   --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "measurement_lab"}' \
-   ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
+# ## Task 2: Measurement tasks (labs and vitals)
+# echo "$(date): Starting measurement lab tasks..."
+# accelerate launch -m lm_eval \
+#    --model hf \
+#    --model_args ${MODEL_ARGS} \
+#    --device cuda \
+#    --apply_chat_template \
+#    --include_path ${INCLUDE_PATH} \
+#    --tasks group_ehrshot_measurement_lab_tasks_gu \
+#    --batch_size ${BATCH_SIZE} \
+#    --output_path ${OUTPUT_BASE_DIR}/task_measurement/lab/max_len_${MAX_MODEL_LEN} \
+#    --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "measurement_lab"}' \
+#    ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
 
-exit_code=$?
-if [ $exit_code -eq 0 ]; then
-    echo "$(date): ✓ Measurement lab tasks completed successfully"
-else
-    echo "$(date): ✗ Measurement lab tasks failed with exit code $exit_code"
-    exit $exit_code
-fi
+# exit_code=$?
+# if [ $exit_code -eq 0 ]; then
+#     echo "$(date): ✓ Measurement lab tasks completed successfully"
+# else
+#     echo "$(date): ✗ Measurement lab tasks failed with exit code $exit_code"
+#     exit $exit_code
+# fi
 
-echo "$(date): Starting measurement vital tasks..."
-accelerate launch -m lm_eval \
-   --model hf \
-   --model_args ${MODEL_ARGS} \
-   --device cuda \
-   --apply_chat_template \
-   --include_path ${INCLUDE_PATH} \
-   --tasks group_ehrshot_measurement_vital_tasks_gu \
-   --batch_size ${BATCH_SIZE} \
-   --output_path ${OUTPUT_BASE_DIR}/task_measurement/vital/max_len_${MAX_MODEL_LEN} \
-   --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "measurement_vital"}' \
-   ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
+# echo "$(date): Starting measurement vital tasks..."
+# accelerate launch -m lm_eval \
+#    --model hf \
+#    --model_args ${MODEL_ARGS} \
+#    --device cuda \
+#    --apply_chat_template \
+#    --include_path ${INCLUDE_PATH} \
+#    --tasks group_ehrshot_measurement_vital_tasks_gu \
+#    --batch_size ${BATCH_SIZE} \
+#    --output_path ${OUTPUT_BASE_DIR}/task_measurement/vital/max_len_${MAX_MODEL_LEN} \
+#    --metadata '{"model_name": "'${MODEL_NAME}'", "max_model_len": "'${MAX_MODEL_LEN}'", "task_name": "measurement_vital"}' \
+#    ${LIMIT_ARG} ${LOG_SAMPLES_ARG}
 
-exit_code=$?
-if [ $exit_code -eq 0 ]; then
-    echo "$(date): ✓ Measurement vital tasks completed successfully"
-else
-    echo "$(date): ✗ Measurement vital tasks failed with exit code $exit_code"
-    exit $exit_code
-fi
+# exit_code=$?
+# if [ $exit_code -eq 0 ]; then
+#     echo "$(date): ✓ Measurement vital tasks completed successfully"
+# else
+#     echo "$(date): ✗ Measurement vital tasks failed with exit code $exit_code"
+#     exit $exit_code
+# fi
 
 ## Task 3: Diagnosis tasks (new and recurrent)
 echo "$(date): Starting new diagnosis tasks..."
